@@ -21,9 +21,9 @@
 #include <sstream>
 #include <future>
 #include <atomic>
+#include <ftd2xx.h>
 
 #include "PacketQueue.h"
-#include "ftd2xx.h"
 #include "DVSIPacket.h"
 
 class CDVDevice
