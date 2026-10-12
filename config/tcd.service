@@ -1,0 +1,12 @@
+[Unit]
+Description=tcd
+Requires=network.target
+After=systemd-user-session.service network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tcd /PATH_TO_INI_FILE
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

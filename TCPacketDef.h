@@ -1,0 +1,33 @@
+#pragma once
+
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#include <cstdint>
+
+enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6, ping = 0xff };
+
+using STCPacket = struct tcpacket_tag {
+	uint32_t sequence;
+	char module;
+	bool is_last;
+	uint16_t streamid;
+	ECodecType codec_in;
+	uint8_t dstar[9];
+	uint8_t dmr[9];
+	uint8_t m17[16];
+	uint8_t p25[11];
+	int16_t usrp[160];
+};
