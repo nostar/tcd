@@ -28,7 +28,7 @@
 #include "PacketQueue.h"
 #include "codec2.h"
 #include "TCSocket.h"
-#include "mbe/mbevocoder_api.h"
+#include "mbe/mbevocoder.h"
 
 class CController
 {

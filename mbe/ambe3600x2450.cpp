@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "mbelib.h"
-#include "ambe3600x2450_const.h"
+#include "mbevocoder.h"
+#include "vocoder_tables.h"
 
 void
 mbe_dumpAmbe2450Data (char *ambe_d)

@@ -19,9 +19,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "mbelib.h"
-#include "ambe3600x2400_const.h"
-#include "dstar_pitch.h"
+#include "mbevocoder.h"
+#include "vocoder_tables.h"
 
 void
 mbe_dumpAmbe2400Data (char *ambe_d)
@@ -286,7 +285,7 @@ mbe_decodeAmbe2400Parms (char *ambe_d, mbe_parms * cur_mp, mbe_parms * prev_mp)
     {
       // L from specification document 
       // lookup L in tabl3
-      L = DSTAR_L(b0);	// QSO One: the chip-measured harmonic count (dstar_pitch.h 3); was AmbePlusLtable[b0]
+      L = DSTAR_L(b0);
       // L formula from patent filings
       //L=(int)((float)0.4627 / f0);
       cur_mp->L = L;
@@ -576,7 +575,7 @@ mbe_decodeAmbe2400Parms (char *ambe_d, mbe_parms * cur_mp, mbe_parms * prev_mp)
       // eq 43
       Sum43 = Sum43 + ((((float) 1 - deltal[l]) * prev_mp->log2Ml[intkl[l]]) + (deltal[l] * prev_mp->log2Ml[intkl[l] + 1]));
     }
-  Sum43 = ((DSTAR_SPEC_PRED / (float) cur_mp->L) * Sum43);	// QSO One: 0.8, measured on a real chip (dstar_pitch.h)
+  Sum43 = ((DSTAR_SPEC_PRED / (float) cur_mp->L) * Sum43);
 #ifdef AMBE_DEBUG
   printf ("\n");
   printf ("Sum43: %f\n", Sum43);
