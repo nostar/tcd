@@ -212,13 +212,10 @@ void CController::Codec2toAudio(std::shared_ptr<CTranscoderPacket> packet)
 		}
 	}
 	// the only thing left is to encode the two ambe, so push the packet onto both AMBE queues
-	ambevocoder.encode_2400x1200((int16_t *)packet->GetAudioSamples(), ambe);
-	packet->SetDStarData(ambe);
-	md380_encode_fec(ambe, (int16_t *)packet->GetAudioSamples());
-	packet->SetDMRData(ambe);
-	p25vocoder.encode_4400((int16_t*)packet->GetAudioSamples(), imbe);
-	packet->SetP25Data(imbe);
-	packet->SetUSRPData((int16_t*)packet->GetAudioSamples());
+	ambe_queue.push(packet);
+	swambe2_queue.push(packet);
+	imbe_queue.push(packet);
+	usrp_queue.push(packet);
 }
 
 void CController::ProcessC2Thread()
