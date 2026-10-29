@@ -23,7 +23,6 @@
 #include <fstream>
 #include <thread>
 #include <queue>
-#include <md380_vocoder.h>
 #include "TranscoderPacket.h"
 #include "Controller.h"
 #include "Configure.h"
@@ -54,7 +53,7 @@ bool CController::Start()
 	imbeFuture      = std::async(std::launch::async, &CController::ProcessIMBEThread,   this);
 	ambeFuture      = std::async(std::launch::async, &CController::ProcessAMBEThread,   this);
 	usrpFuture      = std::async(std::launch::async, &CController::ProcessUSRPThread,   this);
-	swambe2Future   = std::async(std::launch::async, &CController::ProcessSWAMBE2Thread,this);
+	ambe2Future     = std::async(std::launch::async, &CController::ProcessAMBE2Thread,  this);
 	return false;
 }
 
@@ -80,7 +79,6 @@ bool CController::InitVocoders()
 		c2_32[c] = std::unique_ptr<CCodec2>(new CCodec2(true));
 	}
 	
-	md380_init();
 	ambe_in_num = calcNumerator(g_Conf.GetGain(EGainType::dmrin));
 	ambe_out_num = calcNumerator(g_Conf.GetGain(EGainType::dmrout));
 	dstar_in_num = calcNumerator(g_Conf.GetGain(EGainType::dstarin));
@@ -112,7 +110,7 @@ void CController::ReadReflectorThread()
 				ambe_queue.push(packet);
 				break;
 			case ECodecType::dmr:
-				swambe2_queue.push(packet);
+				ambe2_queue.push(packet);
 				break;
 			case ECodecType::p25:
 				imbe_queue.push(packet);
@@ -213,7 +211,7 @@ void CController::Codec2toAudio(std::shared_ptr<CTranscoderPacket> packet)
 	}
 	// the only thing left is to encode the two ambe, so push the packet onto both AMBE queues
 	ambe_queue.push(packet);
-	swambe2_queue.push(packet);
+	ambe2_queue.push(packet);
 	imbe_queue.push(packet);
 	usrp_queue.push(packet);
 }
@@ -279,7 +277,7 @@ void CController::AMBEtoAudio(std::shared_ptr<CTranscoderPacket> packet)
 	}
 	packet->SetAudioSamples(tmp, false);
 	codec2_queue.push(packet);
-	swambe2_queue.push(packet);
+	ambe2_queue.push(packet);
 	imbe_queue.push(packet);
 	usrp_queue.push(packet);
 }
@@ -307,7 +305,7 @@ void CController::ProcessAMBEThread()
 	}
 }
 
-void CController::AudiotoSWAMBE2(std::shared_ptr<CTranscoderPacket> packet)
+void CController::AudiotoAMBE2(std::shared_ptr<CTranscoderPacket> packet)
 {
 	uint8_t ambe[9];
 	const int16_t *p = packet->GetAudioSamples();
@@ -317,10 +315,10 @@ void CController::AudiotoSWAMBE2(std::shared_ptr<CTranscoderPacket> packet)
 		int16_t tmp[160];
 		for(int i = 0; i < 160; ++i)
 			tmp[i] = int16_t((p[i] * ambe_in_num) >> 8);
-		md380_encode_fec(ambe, tmp);
+		ambevocoder.encode_2450x1150(tmp, ambe);
 	}
 	else
-		md380_encode_fec(ambe, (int16_t *)p);
+		ambevocoder.encode_2450x1150((int16_t *)p, ambe);
 
 	packet->SetDMRData(ambe);
 
@@ -330,11 +328,11 @@ void CController::AudiotoSWAMBE2(std::shared_ptr<CTranscoderPacket> packet)
 	send_mux.unlock();
 }
 
-void CController::SWAMBE2toAudio(std::shared_ptr<CTranscoderPacket> packet)
+void CController::AMBE2toAudio(std::shared_ptr<CTranscoderPacket> packet)
 {
 	int16_t tmp[160];
 	uint8_t ambe[9];
-	md380_decode_fec((uint8_t *)packet->GetDMRData(), tmp);
+	ambevocoder.decode_2450x1150(tmp, (uint8_t *)packet->GetDMRData());
 	if (ambe_out_num != 256)
 	{
 		for (int i=0; i<160; i++)
@@ -347,11 +345,11 @@ void CController::SWAMBE2toAudio(std::shared_ptr<CTranscoderPacket> packet)
 	usrp_queue.push(packet);
 }
 
-void CController::ProcessSWAMBE2Thread()
+void CController::ProcessAMBE2Thread()
 {
 	while (keep_running)
 	{
-		auto packet = swambe2_queue.pop();
+		auto packet = ambe2_queue.pop();
 
 		switch (packet->GetCodecIn())
 		{
@@ -360,11 +358,11 @@ void CController::ProcessSWAMBE2Thread()
 			case ECodecType::dstar:
 			case ECodecType::p25:
 			case ECodecType::usrp:
-				AudiotoSWAMBE2(packet);
+				AudiotoAMBE2(packet);
 				break;
 
 			case ECodecType::dmr:
-				SWAMBE2toAudio(packet);
+				AMBE2toAudio(packet);
 				break;
 		}
 	}
@@ -389,7 +387,7 @@ void CController::IMBEtoAudio(std::shared_ptr<CTranscoderPacket> packet)
 	packet->SetAudioSamples(tmp, false);
 	ambe_queue.push(packet);
 	codec2_queue.push(packet);
-	swambe2_queue.push(packet);
+	ambe2_queue.push(packet);
 	usrp_queue.push(packet);
 }
 
@@ -453,7 +451,7 @@ void CController::USRPtoAudio(std::shared_ptr<CTranscoderPacket> packet)
 		
 	codec2_queue.push(packet);
 	ambe_queue.push(packet);
-	swambe2_queue.push(packet);
+	ambe2_queue.push(packet);
 	imbe_queue.push(packet);
 }
 

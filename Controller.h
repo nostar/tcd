@@ -24,7 +24,6 @@
 #include <mutex>
 #include <list>
 #include <utility>
-#include <imbe_vocoder_api.h>
 #include "PacketQueue.h"
 #include "codec2.h"
 #include "TCSocket.h"
@@ -42,7 +41,7 @@ public:
 
 protected:
 	std::atomic<bool> keep_running;
-	std::future<void> reflectorFuture, c2Future, imbeFuture, ambeFuture, swambe2Future, usrpFuture;
+	std::future<void> reflectorFuture, c2Future, imbeFuture, ambeFuture, ambe2Future, usrpFuture;
 	std::unordered_map<char, int16_t[160]> audio_store;
 	std::unordered_map<char, uint8_t[8]> data_store;
 	CTCClient tcClient;
@@ -51,7 +50,7 @@ protected:
 	CPacketQueue codec2_queue;
 	CPacketQueue imbe_queue;
 	CPacketQueue ambe_queue;
-	CPacketQueue swambe2_queue;
+	CPacketQueue ambe2_queue;
 	CPacketQueue usrp_queue;
 	std::mutex send_mux;
 	int32_t dstar_in_num, dstar_out_num, ambe_in_num, ambe_out_num, usrp_rx_num, usrp_tx_num;
@@ -67,7 +66,7 @@ protected:
 
 	void ProcessIMBEThread();
 	void ProcessAMBEThread();
-	void ProcessSWAMBE2Thread();
+	void ProcessAMBE2Thread();
 	void ProcessUSRPThread();
 	void Codec2toAudio(std::shared_ptr<CTranscoderPacket> packet);
 	void AudiotoCodec2(std::shared_ptr<CTranscoderPacket> packet);
@@ -78,6 +77,6 @@ protected:
 	void USRPtoAudio(std::shared_ptr<CTranscoderPacket> packet);
 	void AudiotoUSRP(std::shared_ptr<CTranscoderPacket> packet);
 	void SendToReflector(std::shared_ptr<CTranscoderPacket> packet);
-    void SWAMBE2toAudio(std::shared_ptr<CTranscoderPacket> packet);
-    void AudiotoSWAMBE2(std::shared_ptr<CTranscoderPacket> packet);
+    void AMBE2toAudio(std::shared_ptr<CTranscoderPacket> packet);
+    void AudiotoAMBE2(std::shared_ptr<CTranscoderPacket> packet);
 };

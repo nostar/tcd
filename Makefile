@@ -10,9 +10,9 @@ else
 CFLAGS = -W -Werror -Icodec2 -MMD -MD -std=c++17
 endif
 
-LDFLAGS = -limbe_vocoder -lmd380_vocoder -pthread
+LDFLAGS = -pthread
 
-SRCS = $(wildcard *.cpp) $(wildcard codec2/*.cpp) $(wildcard mbe/*.cpp)
+SRCS = $(wildcard *.cpp) $(wildcard codec2/*.cpp) $(wildcard imbe_vocoder/*.cpp) $(wildcard mbe/*.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 EXE = tcd

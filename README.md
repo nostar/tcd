@@ -44,11 +44,7 @@ Use your favorite text editor to edit the following files:
 
 ## Transcoding options
 
-The md380_vocoder library for arm32 linux OS is located here:
-https://github.com/nostar/md380_vocoder
-
-The md380_vocoder library for all Intel/AMD 64-bit and ARM 64-bit platforms (including Android) is located here:
-https://github.com/nostar/md380_vocoder_dynarmic
+This transcoder is all software with no external library requirements, and no hardware requirements. Since there are no hardware based module restrictions, all 26 modules can be transcoded.
 
 ## Installing *tcd* when the transcoder is local
 
